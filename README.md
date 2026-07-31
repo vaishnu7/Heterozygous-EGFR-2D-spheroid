@@ -1,8 +1,8 @@
-# NSCLC Spheroid 2D Cross Section Agent-Based Model
+# Heterozygous EGFR Spheroid 2D Cross Section Agent-Based Model
 
 ## Model Description
 
-This model simulates the 2D cross-sectional growth of a non-small cell lung cancer (NSCLC) spheroid using an agent-based modelling (ABM) approach implemented in Chaste. Each cell is represented as an individual agent with defined rules governing proliferation, adhesion, and spatial organisation. The model captures emergent spheroid morphology arising from protein (EGFR, TGFα, and HIF) dynamics in presence of heterozygous EGFR for studying tumour growth dynamics in a controlled in-silico environment. To run this simulation, you have follow the instructions below. You may also skip the Docker introduction if you are already familiar with the interface:
+This model simulates the 2D cross-sectional growth of a cancer spheroid with heterozygous EGFR mutation using an agent-based modelling (ABM) approach implemented in Chaste. Each cell is represented as an individual agent with defined rules governing proliferation, adhesion, and spatial organisation. The model captures emergent spheroid morphology arising from protein (EGFR, TGFα, and HIF) dynamics in presence of heterozygous EGFR for studying tumour growth dynamics in a controlled in-silico environment. To run this simulation, you have follow the instructions below. You may also skip the Docker introduction if you are already familiar with the interface:
 
 ---
 
