@@ -15,7 +15,7 @@
  *
  * Original author:  Vaishnudebi Dutta
  * Created:           24 Oct 2025
- * Resumable:         19 Jun 2026
+ * Edited:         19 Jun 2026
  */
 
 #ifndef TESTPC9SPHEROID2D_MULTI_EXPERI_HETEROGENOUS_RESUMABLE_HPP_
@@ -170,7 +170,7 @@ public:
 
         // Simulation parameters
         double dt                = 0.005;
-        double end_time          = 240.0;
+        double end_time          = 2.0; // please change this value to something reasonable like 240 or 450 as per your need
         double sampling_timestep = 1.0 / dt;
 
         // Spheroid parameters
