@@ -1,1 +1,1 @@
-FROM chaste/release:2026.1
+FROM chaste/release:2024.2
