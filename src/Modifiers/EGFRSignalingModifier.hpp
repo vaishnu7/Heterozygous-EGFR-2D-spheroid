@@ -59,6 +59,7 @@ public:
                           double downstreamK               = 0.3,
                           int    downstreamN               = 2,
                           double receptorDecayRate           = 0.25,
+                          double dt                        = 0.005,
                           double maxOxygenRescueFraction   = 0.5)
         : AbstractCellBasedSimulationModifier<2>(),
           mTGFAlphaActivationThreshold(tgfAlphaThreshold),
@@ -67,7 +68,7 @@ public:
           mDownstreamK(downstreamK),
           mDownstreamN(downstreamN),
           mReceptorDecayRate(receptorDecayRate),
-          mDt(0.01),  // default value; should be overridden by test via constructor arg
+          mDt(dt),  // default value; should be overridden by test via constructor arg
           mMaxOxygenRescueFraction(maxOxygenRescueFraction)
     {
     }
