@@ -42,6 +42,7 @@ jobs:
             -v "${{ github.workspace }}:/home/chaste/projects/HeterozygousEGFRSpheroid" \
             chaste/release:${{ steps.image.outputs.tag }} \
             bash -c '
+              git config --global --add safe.directory /home/chaste/src/projects/HeterozygousEGFRSpheroid &&
               cd ~/build &&
               build_project.sh TestPC9spheroid2D_multi_experi_heterogenous c &&
               ctest -V -R TestPC9spheroid2D_multi_experi_heterogenous
