@@ -1,8 +1,0 @@
-version: 2
-updates:
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-      time: "12:00"
-      timezone: "Europe/London"
