@@ -40,7 +40,7 @@ jobs:
             bash -c '
               cd ~/build &&
               build_project.sh HeterozygousEGFRSpheroid c &&
-              ctest -V -R TestPC9spheroid2D_multi_experi_drugs_heterogenous
+              ctest -V -R TestPC9spheroid2D_multi_experi_heterogenous
             ' 2>&1 | tee test_output.log
 
       - name: Create issue on failure
