@@ -1,5 +1,3 @@
-%% Analyze PC9 Spheroid Simulation Data
-% Complete analysis and visualization script
 % Run this in MATLAB after your simulation completes
 
 clear all; close all; clc;
@@ -8,7 +6,7 @@ clear all; close all; clc;
 % STEP 1: Load all data files
 % =========================================================================
 
-data_dir = 'C:\Users\gz24763\OneDrive - University of Bristol\Documents\ChasteData\cancer-PC9-spheroid-38-091225\cellData\';
+data_dir = 'path-to-your\cellData\';
 
 % Check if directory exists
 if ~exist(data_dir, 'dir')
