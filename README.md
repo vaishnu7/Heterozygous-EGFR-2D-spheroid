@@ -107,7 +107,7 @@ This is a bash shell inside an isolated Docker container. Chaste is fully compil
 To use a particular Chaste version (recommended for reproducibility), specify a tag:
 
 ```bash
-docker run --init -it --rm -v chaste_data:/home/chaste chaste/release:2024.2
+docker run --init -it --rm -v chaste_data:/home/chaste chaste/release:2026.1
 ```
 
 Available tags are listed at: https://hub.docker.com/r/chaste/release/tags
