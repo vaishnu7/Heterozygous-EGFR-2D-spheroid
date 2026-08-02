@@ -43,8 +43,8 @@ jobs:
             chaste/release:${{ steps.image.outputs.tag }} \
             bash -c '
               cd ~/build &&
-              build_project.sh TestPC9spheroid2D_multi_experi_drugs_heterogenous c &&
-              ctest -V -R TestPC9spheroid2D_multi_experi_drugs_heterogenous
+              build_project.sh TestPC9spheroid2D_multi_experi_heterogenous c &&
+              ctest -V -R TestPC9spheroid2D_multi_experi_heterogenous
             ' 2>&1 | tee test_output.log
 
       - name: Create issue on failure
