@@ -2,7 +2,6 @@
 * Created on: 21 Oct 2025
 * Last modified: 21 Oct 2025
 * 		Author: Vaishnudebi Dutta
-* Modified: Added EGFR ratio shift in hypoxia (Step 4)
 */
 
 #include "CellData.hpp"                                 // Generic cell property storage
