@@ -2,30 +2,10 @@
 * Created on: 21 Oct 2025
 * Last modified: 01 Jun 2026
 * 		Author: Vaishnudebi Dutta
-* Modified: Blended WT and mutant EGFR response
-* Modified: effective_oxygen rewritten to couple downstream_signal
-*           to the cell cycle via SimpleOxygenBasedCellCycleModel.
-* Modified: EGFRMutationType enum moved to test file. Modifier now
-*           accepts mMaxOxygenRescueFraction directly as a constructor
-*           argument. The test file owns the mutation type decision
-*           and passes the appropriate fraction here.
 */
 #include "CellData.hpp"
 #include "ApcTwoHitCellMutationState.hpp"
 
-// ============================================================================
-// EGFR-TGF-alpha Signaling Modifier (Blended WT + Mutant)
-// ============================================================================
-// PC9 cells: 90% mutant EGFR (constitutive) + 10% WT EGFR (ligand-dependent)
-//
-// WT EGFR: requires TGF-alpha to activate
-// Mutant EGFR: constitutively active (independent of TGF-alpha)
-//
-// mMaxOxygenRescueFraction is passed in from the test file, where the
-// EGFRMutationType enum lives. Values:
-//   EXON19_DEL → 0.5    (αC-helix stabilised, more stress-resilient)
-//   L858R      → 0.35   (activation loop mutation, less stress-resilient)
-// ============================================================================
 class EGFRSignalingModifier : public AbstractCellBasedSimulationModifier<2>
 {
 private:
@@ -36,20 +16,6 @@ private:
     int    mDownstreamN;                  // Hill n for downstream signal
     double mReceptorDecayRate;  // 0.25/h → t½ ≈ 2.8h
     double mDt;                 // simulation timestep, passed from constructor
-    // =========================================================================
-    // mMaxOxygenRescueFraction
-    //
-    // Passed in from the test file via EGFRMutationType enum lookup.
-    //
-    // Biological meaning:
-    //   The maximum fraction of the mild-hypoxia O2 gap (0.05 - oxygen) that
-    //   EGFR downstream signalling (PI3K/AKT, RAS/MAPK → cyclin D1) can
-    //   compensate for, at full signal strength. Both WT and mutant EGFR
-    //   contribute via downstream_signal (which already encodes the blended
-    //   WT + mutant activation weighted by their fractions). The mutation type
-    //   sets the ceiling because exon 19 del maintains a more structurally
-    //   stable active conformation under hypoxic stress than L858R.
-    // =========================================================================
     double mMaxOxygenRescueFraction;
 
 public:
@@ -83,12 +49,7 @@ public:
 
             if (cell_is_necrotic)
             {
-                // Necrotic cells have no EGFR activity
-                //cell_iter->GetCellData()->SetItem("egfr_activation",     0.0);
-                //cell_iter->GetCellData()->SetItem("wt_egfr_activation",  0.0);
-                //cell_iter->GetCellData()->SetItem("mut_egfr_activation",  0.0);
-                //cell_iter->GetCellData()->SetItem("effective_oxygen",    0.0);
-                //cell_iter->GetCellData()->SetItem("downstream_signal",   0.0);
+ 
                 double necrosis_onset = cell_iter->GetCellData()->GetItem("necrosis_onset_time");
                 double now = SimulationTime::Instance()->GetTime();
                 if (necrosis_onset < 0.0)
@@ -169,37 +130,6 @@ public:
             // ================================================================
             // EFFECTIVE OXYGEN — coupling downstream_signal to the cell cycle
             //
-            // SimpleOxygenBasedCellCycleModel reads "effective_oxygen" in
-            // preference to "oxygen" (in both UpdateCellCyclePhase and
-            // UpdateHypoxicDuration) when the key is present. By raising
-            // effective_oxygen within the mild hypoxia band, we reduce the
-            // rate at which G1 is lengthened each timestep and delay
-            // hypoxic death onset — both direct cell cycle effects.
-            //
-            // Rescue is active only in mild hypoxia: 0.01 <= oxygen < 0.05
-            //
-            // Formula:
-            //   effective_oxygen = oxygen
-            //                    + (0.05 - oxygen)          [gap to hypoxic upper bound]
-            //                    * mMaxOxygenRescueFraction  [mutation type ceiling]
-            //                    * downstream_signal         [total EGFR signal strength]
-            //
-            // Note: downstream_signal is derived from blended_egfr_activation,
-            // which already encodes both WT (TGF-alpha dependent) and mutant
-            // (constitutive) contributions weighted by their fractions.
-            // egfr_mut_fraction is NOT multiplied separately — that would
-            // double-penalise the WT contribution and incorrectly suppress
-            // rescue in cells where WT EGFR is active via TGF-alpha.
-            //
-            // Properties:
-            //   - In normoxia or above hypoxic threshold (oxygen >= 0.05):
-            //     no rescue. Cell cycle governed by real oxygen alone.
-            //   - In mild hypoxia (0.01 <= oxygen < 0.05): rescue proportional
-            //     to total EGFR signal strength, ceilinged by mutation type.
-            //   - In severe hypoxia (oxygen < 0.01): rescue disabled.
-            //     EGFR signalling cannot overcome critical O2 deficit.
-            //   - effective_oxygen is naturally bounded below 0.05 because
-            //     gap > 0 and mMaxOxygenRescueFraction < 1.
             // ================================================================
             double oxygen = cell_iter->GetCellData()->GetItem("oxygen");
             double effective_oxygen = oxygen;  // default: no rescue
