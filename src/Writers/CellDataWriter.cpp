@@ -2,7 +2,6 @@
  * CellDataWriter.cpp
  * Author: Vaishnudebi Dutta
  * Date: 24 Oct, 2025
- * FIXED: Simplified to write to simulation output directory directly
  */
 
 #include "CellDataWriter.hpp"
