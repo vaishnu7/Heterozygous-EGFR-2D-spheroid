@@ -1,12 +1,5 @@
 /*
- * TestPC9Spheroid2D.hpp
- *
- * 2D cross-section model of PC9 or general NSCLC tumor spheroid with hypoxic zones
- * Parameter sweep on oxygen penetration depth (4 different values)
- * Fixed spheroid radius = 8 cell units
- * Models radial oxygen gradient from spheroid surface to hypoxic/necrotic core
- * Incorporates HIF-1a and TGF-a signaling under hypoxia, affecting proliferation
- * Based on off-lattice cell-based modeling framework in Chaste
+ * TestPC9spheroid2D_sweep_o2pene_heterogeneity.hpp
  *
  * Created on: 24 Oct, 2025
  * Author: Vaishnudebi Dutta
@@ -15,78 +8,6 @@
  * HETEROGENEITY ADDED: 29 Jun, 2026 (aligned to TestPC9Spheroid2D_Heterogeneous_Resumable.hpp)
  * MESH/CELL MISMATCH BUG FIXED: 29 Jun, 2026 (same fix applied to the radius sweep)
  *
- * ============================================================================
- * HETEROGENEITY EXTENSION
- * ============================================================================
- * This version introduces PER-CELL intratumoral heterogeneity in the EGFR
- * mut:wt ratio, replacing the previous global scalar (egfr_mut_fraction).
- * The CellData key names and SampleBeta helper here mirror those used in
- * the general (non-sweep) heterogeneous simulation script you provided
- * (TestPC9Spheroid2D_Heterogeneous_Resumable.hpp), and are identical to
- * the heterogeneous radius-sweep script, so all three are directly
- * comparable.
- *
- * Fixed across the whole sweep (per your instruction): EXON19_DEL mutation
- * type, Beta(alpha=5, beta=5) shape parameters.
- *
- * NOTE ON MODIFIER ARGUMENTS: your reference script (the general
- * heterogeneous simulation) calls HypoxiaSignalingModifier with 13
- * arguments and EGFRSignalingModifier with 8 arguments. I could only verify
- * the meaning of the first ~8 args of Hypoxia (plus 3 more HIF-related
- * args) and the first 3 args of EGFR against prior chats/header
- * discussions; the remaining trailing arguments (two 0.0's on Hypoxia, and
- * 0.3/2/0.25/0.0 on EGFR) are carried over verbatim from that reference but
- * their physical meaning is UNVERIFIED here — see inline comments at each
- * call site below. Please check these against the actual .hpp constructor
- * declarations before trusting sweep output quantitatively.
- *
- * Biological motivation:
- *   Alsaed et al. (Nat Commun, 2025; doi:10.1038/s41467-024-55378-5) show
- *   that EGFR-mutant tumors harbour pre-existing subclones with low EGFR
- *   expression, and that EGFR-low cells are more tolerant to TKI. PC9 cells
- *   display significant variability in EGFR inhibitor response even among
- *   clonal sublines (Camp et al., PLOS Biology, 2021;
- *   doi:10.1371/journal.pbio.3000797). Kobayashi & Tan (IJMS, 2023) review
- *   how this subclonal heterogeneity drives drug-tolerant persister (DTP)
- *   populations and eventual resistance.
- *
- * Implementation:
- *   Each cell is assigned its own egfr_mut_fraction at initialisation,
- *   sampled from a Beta(alpha, beta) distribution via Chaste's own
- *   StandardNormalRandomDeviate(), clamped to [0.01, 0.99]. Mutation type
- *   (EXON19_DEL vs L858R) sets the base EGFR rescue fraction; per-cell
- *   G1 duration and EGFR rescue fraction are then derived from each cell's
- *   own sampled fraction rather than a global constant:
- *     - cell_g1     = g1_min + g1_extra_hours * cell_wt_frac
- *                     (WT-enriched cells cycle slower)
- *     - cell_rescue = base_rescue_fraction * cell_mut_frac
- *                     (rescue is mediated by mutant EGFR signalling)
- *
- *   Per-cell fractions are stored in CellData ("egfr_mut_fraction",
- *   "egfr_wt_fraction", "egfr_rescue") for HypoxiaSignalingModifier and
- *   EGFRSignalingModifier to read at runtime.
- *
- * ============================================================================
- * MESH/CELL MISMATCH BUG FIX
- * ============================================================================
- * The original script called generator.GetCircularMesh(spheroid_radius) --
- * which ALREADY trims the mesh down to the circular region of that radius
- * -- and then RE-FILTERED all_indices by radius a second time to build
- * location_indices. That second filter can produce a location_indices list
- * that is a strict subset of the mesh's actual nodes (e.g. due to
- * floating-point boundary effects after jitter), which
- * MeshBasedCellPopulation's constructor rejects outright at time 0
- * ("Node N does not appear to have a cell associated with it"). This was
- * confirmed against this exact failure mode in the heterogeneous radius
- * sweep. Fix: location_indices now comes directly from
- * generator.GetCellLocationIndices(), with no re-filtering; jitter is
- * applied afterwards and only perturbs node positions, never which nodes
- * exist.
- *
- * Sweep structure (unchanged from the original O2-penetration-depth sweep):
- *   Fixed spheroid radius = 8 cell units; 4 oxygen penetration depths x
- *   5 replicates each, with index-based resume (resume_sweep_index /
- *   resume_rep) rather than marker-file resumability.
  */
 
 #ifndef TESTPC9SPHEROID2D_HPP_
@@ -142,16 +63,15 @@
 #include "HIF1AlphaWriter.hpp"                          // Output HIF-1a data
 #include "TGFAlphaWriter.hpp"                           // Output TGF-a data
 #include "EGFRActivationWriter.hpp"                     // Output EGFR activation data
-//#include "SpheroidRadiusWriter.hpp"                     // Output spheroid radius data
-//#include "SpheroidBoundaryModifier.hpp"                 // Enforce spheroid boundary constraints
+
 
 // ============================================================================
 // EGFRMutationType
 // ============================================================================
 enum class EGFRMutationType
 {
-    EXON19_DEL,  // dE746-A750 — PC9 canonical mutation
-    L858R        // Leu858Arg  — activation loop mutation
+    EXON19_DEL,  
+    L858R        
 };
 
 double GetEGFRBaseRescueFraction(EGFRMutationType mutationType)
@@ -182,8 +102,6 @@ std::string GetMutationLabel(EGFRMutationType mutationType)
 //   mean = alpha/(alpha+beta)
 //   variance = alpha*beta / ((alpha+beta)^2 * (alpha+beta+1))
 // clamped to [0.01, 0.99] to avoid degenerate 0/1 fractions.
-// (Matches TestPC9Spheroid2D_Heterogeneous_Resumable.hpp exactly, and the
-// heterogeneous radius-sweep script.)
 // ============================================================================
 static double SampleBeta(double alpha, double beta)
 {
@@ -235,13 +153,6 @@ public:
         RandomNumberGenerator::Instance()->Reseed(replicate_index);
         
         // Generate CIRCULAR honeycomb mesh
-        // GetCircularMesh() ALREADY trims the mesh down to the circular
-        // region of the given radius -- p_mesh only contains nodes inside
-        // the circle. Do NOT re-filter by radius afterwards: doing so can
-        // produce a location_indices list that is a strict subset of the
-        // mesh's actual nodes (e.g. due to floating-point boundary effects),
-        // which MeshBasedCellPopulation's constructor rejects outright
-        // ("Node N does not appear to have a cell associated with it").
         HoneycombMeshGenerator generator(mesh_size, mesh_size, 0);
         boost::shared_ptr<MutableMesh<2,2>> p_mesh_shared = generator.GetCircularMesh(spheroid_radius);
         MutableMesh<2,2>* p_mesh = p_mesh_shared.get();
@@ -390,8 +301,6 @@ public:
         cell_population.AddCellWriter<TGFAlphaWriter>();
         cell_population.SetWriteVtkAsPoints(true);
         cell_population.AddPopulationWriter<VoronoiDataWriter>();
-        //MAKE_PTR(SpheroidRadiusWriter, p_radius_writer);
-        //cell_population.AddPopulationWriter(p_radius_writer);
 
         // Create output directory for this run
         // (renamed to flag this as the heterogeneous-EGFR version of the
@@ -434,17 +343,6 @@ public:
         simulator.AddSimulationModifier(p_oxygen_modifier);
         
         // Add HIF-1a and TGF-a signaling
-        // Args 1-8 match the originally documented signature (hypoxia threshold,
-        // max HIF-1a, HIF-1a degradation rate, TGF-a production rate, TGF-a
-        // diffusion radius, TGF-a degradation rate, max TGF-a, dt).
-        // Args 9-11 (0.05, 0.08, 0.003) were confirmed in a prior chat as HIF
-        // basal synthesis rate, max O2-dependent HIF degradation, and
-        // O2-independent HIF degradation rate respectively.
-        // Args 12-13 (the trailing 0.0, 0.0) appear in the reference
-        // heterogeneous script but I could not verify their meaning against
-        // any header file or prior chat — copied verbatim rather than
-        // guessed. Please confirm what these represent before relying on
-        // this run.
         MAKE_PTR_ARGS(HypoxiaSignalingModifier, p_hypoxia_signaling, 
             (0.05,                  // Hypoxia threshold
                 1.0,                // Max HIF-1a concentration
@@ -470,14 +368,6 @@ public:
         // Add EGFR-TGF-a signaling (reads HIF-1a and TGF-a from above, and
         // each cell's own "egfr_mut_fraction" / "egfr_wt_fraction" /
         // "egfr_rescue" from CellData)
-        // Args 1-3 (0.001, 1.0, 1.0) match the originally documented
-        // signature: TGF-a activation threshold, WT EGFR sensitivity,
-        // mutant EGFR basal activity.
-        // Args 4-8 (0.3, 2, 0.25, dt, 0.0) appear in the reference
-        // heterogeneous script but I could not verify their meaning against
-        // any header file or prior chat — copied verbatim rather than
-        // guessed. Please confirm against EGFRSignalingModifier.hpp's
-        // constructor declaration before relying on this run.
         MAKE_PTR_ARGS(EGFRSignalingModifier, p_egfr_signaling, 
             (0.001,                   // TGF-a activation threshold
                 1.0,                // WT EGFR sensitivity
