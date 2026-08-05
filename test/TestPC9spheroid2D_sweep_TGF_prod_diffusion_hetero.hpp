@@ -1,32 +1,10 @@
 /*
- * TestPC9Spheroid2D_TGFaProdDiffSweep_Resumable.hpp
- *
- * 2D cross-section model of cancer tumor spheroid with hypoxic zones.
- * JOINT parameter sweep on TGF-alpha PRODUCTION RATE x TGF-alpha DIFFUSION
- * RADIUS (i.e. a grid of every production rate against every diffusion
- * radius), with replicates at each grid point.
- *
- * Models radial oxygen gradient from spheroid surface to hypoxic/necrotic core.
- * Incorporates HIF and TGF-a signaling under hypoxia, affecting proliferation.
- * Based on off-lattice cell-based modeling framework in Chaste.
- *
- * Per-cell intratumoral heterogeneity in the EGFR mut:wt ratio (Beta-sampled),
- * carried over from TestPC9Spheroid2D_Heterogeneous_Resumable.hpp.
- *
- * RESUME LOGIC: same pattern as TestPC9Spheroid2D_Heterogeneous_Resumable.hpp —
- *   - a ".run_complete" marker file is written inside each run's own output
- *     directory only after that run finishes successfully
- *   - before running, check for that marker; if present, skip it
+ * TestPC9spheroid2D_sweep_TGF_prod_diffusion_hetero.hpp
  *
  * Original single-parameter sweep author: Vaishnudebi Dutta (24 Oct 2025)
  * Heterogeneous resumable reference:      19 Jun 2026
- * Extended to joint production x diffusion sweep + heterogeneity: 22 Jul 2026
+ * Extended to joint production - diffusion sweep + heterogeneity: 22 Jul 2026
  *
- * NOTE: Modifier signatures/values, cell-data key casing, mesh jitter
- * ordering, and cell writers below are all matched to the reference script
- * TestPC9Spheroid2D_Heterogeneous_Resumable.hpp so that only the TGF-a
- * production rate and diffusion radius differ from that reference (as the
- * two swept axes) — everything else is unchanged from it.
  */
 
 #ifndef TESTPC9SPHEROID2D_TGFAPRODDIFFSWEEP_RESUMABLE_HPP_
@@ -81,8 +59,8 @@
 // ============================================================================
 enum class EGFRMutationType
 {
-    EXON19_DEL,  // dE746-A750 — PC9 canonical mutation
-    L858R        // Leu858Arg  — activation loop mutation
+    EXON19_DEL,  
+    L858R        
 };
 
 double GetEGFRBaseRescueFraction(EGFRMutationType mutationType)
