@@ -1,10 +1,10 @@
 /*
- * TestPC9Spheroid2D.hpp
+ * TestPC9spheroid2D_sweep_TGF_diffusion_multi_exp.hpp
  *
- * 2D cross-section model of PC9 or general NSCLC tumor spheroid with hypoxic zones
+ * 2D cross-section model of tumor spheroid with hypoxic zones
  * Parameter sweep on TGF-alpha diffusion rate
  * Models radial oxygen gradient from spheroid surface to hypoxic/necrotic core
- * Incorporates HIF-1a and TGF-a signaling under hypoxia, affecting proliferation
+ * Incorporates HIF and TGF-a signaling under hypoxia, affecting proliferation
  * Based on off-lattice cell-based modeling framework in Chaste
  *
  * Created on: 24 Oct, 2025
