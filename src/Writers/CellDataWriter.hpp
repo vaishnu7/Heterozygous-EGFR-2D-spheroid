@@ -1,7 +1,7 @@
 /*
  * CellDataWriter.hpp
  *
- * Custom cell data writer for PC9 spheroid simulation
+ * Custom cell data writer for spheroid simulation
  * Outputs oxygen gradient, hypoxia signaling, EGFR activation, and cell state data
  * Outputs force components and cell properties
  *
@@ -19,7 +19,7 @@
 
 /**
  * A cell writer class that outputs custom cell data for spheroid simulations.
- * Writes oxygen concentration, HIF-1a, TGF-a, EGFR activation, cell state,
+ * Writes oxygen concentration, HIF, TGF-a, EGFR activation, cell state,
  * and force information to structured output files.
  *
  * Template parameters:
