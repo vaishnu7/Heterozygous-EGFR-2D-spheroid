@@ -14,7 +14,7 @@ private:
     double mMutantEGFRBasalActivity;      // Mutant EGFR constitutive activity level
     double mDownstreamK;                  // Hill K for downstream signal
     int    mDownstreamN;                  // Hill n for downstream signal
-    double mReceptorDecayRate;  // 0.25/h → t½ ≈ 2.8h
+    double mReceptorDecayRate;  // 0.25/h
     double mDt;                 // simulation timestep, passed from constructor
     double mMaxOxygenRescueFraction;
 
@@ -34,7 +34,7 @@ public:
           mDownstreamK(downstreamK),
           mDownstreamN(downstreamN),
           mReceptorDecayRate(receptorDecayRate),
-          mDt(dt),  // default value; should be overridden by test via constructor arg
+          mDt(dt),  // default value
           mMaxOxygenRescueFraction(maxOxygenRescueFraction)
     {
     }
@@ -76,7 +76,7 @@ public:
                 cell_iter->GetCellData()->SetItem("downstream_signal", downstream);
 
                 double oxygen = cell_iter->GetCellData()->GetItem("oxygen");
-                cell_iter->GetCellData()->SetItem("effective_oxygen", oxygen); // no rescue
+                cell_iter->GetCellData()->SetItem("effective_oxygen", oxygen); 
 
                 continue;
             }
@@ -97,9 +97,7 @@ public:
             }
 
             // ===== Mutant EGFR Response (constitutive) =====
-            // Both EXON19_DEL and L858R are constitutively active — they do
-            // not require TGF-alpha. mMutantEGFRBasalActivity is the same
-            // for both (1.0 when passed from test). The mutation type only
+            // Both EXON19_DEL and L858R are constitutively active. The mutation type only
             // affects mMaxOxygenRescueFraction, set in the constructor.
             double mut_egfr_activation = std::min(1.0, mMutantEGFRBasalActivity);
 
@@ -129,7 +127,6 @@ public:
 
             // ================================================================
             // EFFECTIVE OXYGEN — coupling downstream_signal to the cell cycle
-            //
             // ================================================================
             double oxygen = cell_iter->GetCellData()->GetItem("oxygen");
             double effective_oxygen = oxygen;  // default: no rescue
