@@ -7,12 +7,6 @@
  * Based on off-lattice cell-based modeling framework in Chaste.
  *
  * Per-cell intratumoral heterogeneity in the EGFR mut:wt ratio (Beta-sampled).
- *
- * RESUME LOGIC: same pattern as TestPC9Spheroid2D.hpp —
- *   - a ".run_complete" marker file is written inside each replicate's own
- *     output directory only after that replicate finishes successfully
- *   - before running a replicate, check for that marker; if present, skip it
- *
  * Original author:  Vaishnudebi Dutta
  * Created:           24 Oct 2025
  * Edited:         19 Jun 2026
@@ -70,8 +64,8 @@
 // ============================================================================
 enum class EGFRMutationType
 {
-    EXON19_DEL,  // dE746-A750 — PC9 canonical mutation
-    L858R        // Leu858Arg  — activation loop mutation
+    EXON19_DEL,  
+    L858R        
 };
 
 double GetEGFRBaseRescueFraction(EGFRMutationType mutationType)
