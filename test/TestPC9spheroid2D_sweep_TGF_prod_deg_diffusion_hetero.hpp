@@ -1,34 +1,10 @@
 /*
  * TestPC9Spheroid2D_TGFaProdDiffDegSweep_Resumable.hpp
  *
- * 2D cross-section model of cancer tumor spheroid with hypoxic zones.
- * JOINT parameter sweep on TGF-alpha PRODUCTION RATE x TGF-alpha DIFFUSION
- * RADIUS x TGF-alpha DEGRADATION RATE (i.e. a 3D grid of every production
- * rate against every diffusion radius against every degradation rate),
- * with replicates at each grid point.
- *
- * Models radial oxygen gradient from spheroid surface to hypoxic/necrotic core.
- * Incorporates HIF and TGF-a signaling under hypoxia, affecting proliferation.
- * Based on off-lattice cell-based modeling framework in Chaste.
- *
- * Per-cell intratumoral heterogeneity in the EGFR mut:wt ratio (Beta-sampled),
- * carried over from TestPC9Spheroid2D_Heterogeneous_Resumable.hpp.
- *
- * RESUME LOGIC: same pattern as TestPC9Spheroid2D_Heterogeneous_Resumable.hpp —
- *   - a ".run_complete" marker file is written inside each run's own output
- *     directory only after that run finishes successfully
- *   - before running, check for that marker; if present, skip it
- *
  * Original single-parameter sweep author: Vaishnudebi Dutta (24 Oct 2025)
  * Heterogeneous resumable reference:      19 Jun 2026
  * Extended to joint production x diffusion sweep + heterogeneity: 22 Jul 2026
  * Extended to joint production x diffusion x degradation sweep:   23 Jul 2026
- *
- * NOTE: Modifier signatures/values, cell-data key casing, mesh jitter
- * ordering, and cell writers below are all matched to the reference script
- * TestPC9Spheroid2D_Heterogeneous_Resumable.hpp so that only the TGF-a
- * production rate, diffusion radius, and degradation rate differ from that
- * reference (as the three swept axes) — everything else is unchanged from it.
  */
 
 #ifndef TESTPC9SPHEROID2D_TGFAPRODDIFFDEGSWEEP_RESUMABLE_HPP_
@@ -83,8 +59,8 @@
 // ============================================================================
 enum class EGFRMutationType
 {
-    EXON19_DEL,  // dE746-A750 — PC9 canonical mutation
-    L858R        // Leu858Arg  — activation loop mutation
+    EXON19_DEL,  
+    L858R      
 };
 
 double GetEGFRBaseRescueFraction(EGFRMutationType mutationType)
@@ -155,22 +131,7 @@ private:
 
 public:
 
-    /**
-     * Runs a single simulation at one (production rate, diffusion radius,
-     * degradation rate, replicate) grid point, with per-cell EGFR mut:wt
-     * heterogeneity.
-     *
-     * @param egfrMutation        EGFR mutation subtype (sets base rescue fraction)
-     * @param betaAlpha           Beta distribution alpha shape param for mut_frac
-     * @param betaBeta            Beta distribution beta shape param for mut_frac
-     * @param tgfProductionRate   TGF-a production rate under hypoxia (SWEPT: axis 1)
-     * @param tgfDiffusionRadius  TGF-a diffusion radius (SWEPT: axis 2)
-     * @param tgfDegradationRate  TGF-a degradation rate (SWEPT: axis 3)
-     * @param prodSweepIndex      1-based index into the production-rate list
-     * @param diffSweepIndex      1-based index into the diffusion-radius list
-     * @param degSweepIndex       1-based index into the degradation-rate list
-     * @param replicateIndex      1-based replicate number within this grid point
-     */
+
     void RunSpheroidSimulation(EGFRMutationType egfrMutation, double betaAlpha, double betaBeta,
                                 double tgfProductionRate, double tgfDiffusionRadius,
                                 double tgfDegradationRate,
