@@ -1,11 +1,5 @@
 /*
- * TestPC9Spheroid2D.hpp
- *
- * 2D cross-section model of PC9 or general NSCLC tumor spheroid with hypoxic zones
- * Parameter sweep on hypoxia onset radius
- * Models radial oxygen gradient from spheroid surface to hypoxic/necrotic core
- * Incorporates HIF-1a and TGF-a signaling under hypoxia, affecting proliferation
- * Based on off-lattice cell-based modeling framework in Chaste
+ * TestPC9spheroid2D_sweep_hyp_onset_rad_multi_exp.hpp
  *
  * Created on: 19 Jan, 2026
  * FIXED: 15 Feb, 2026
@@ -64,8 +58,6 @@
 #include "HIF1AlphaWriter.hpp"                          // Output HIF-1a data
 #include "TGFAlphaWriter.hpp"                           // Output TGF-a data
 #include "EGFRActivationWriter.hpp"                     // Output EGFR activation data
-//#include "SpheroidRadiusWriter.hpp"                     // Output spheroid radius data
-// #include "SpheroidBoundaryModifier.hpp"                 // Enforce spheroid boundary constraints
 
 class TestPC9Spheroid2D : public AbstractCellBasedTestSuite
 {
