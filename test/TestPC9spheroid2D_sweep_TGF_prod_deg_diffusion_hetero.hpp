@@ -1,5 +1,5 @@
 /*
- * TestPC9Spheroid2D_TGFaProdDiffDegSweep_Resumable.hpp
+ * TestPC9spheroid2D_sweep_TGF_prod_deg_diffusion_hetero.hpp
  *
  * Original single-parameter sweep author: Vaishnudebi Dutta (24 Oct 2025)
  * Heterogeneous resumable reference:      19 Jun 2026
