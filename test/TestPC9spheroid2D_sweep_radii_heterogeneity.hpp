@@ -70,8 +70,8 @@
 // ============================================================================
 enum class EGFRMutationType
 {
-    EXON19_DEL,  // dE746-A750 — PC9 canonical mutation
-    L858R        // Leu858Arg  — activation loop mutation
+    EXON19_DEL,  
+    L858R        
 };
 
 double GetEGFRBaseRescueFraction(EGFRMutationType mutationType)
@@ -102,7 +102,6 @@ std::string GetMutationLabel(EGFRMutationType mutationType)
 //   mean = alpha/(alpha+beta)
 //   variance = alpha*beta / ((alpha+beta)^2 * (alpha+beta+1))
 // clamped to [0.01, 0.99] to avoid degenerate 0/1 fractions.
-// (Matches TestPC9Spheroid2D_Heterogeneous_Resumable.hpp exactly.)
 // ============================================================================
 static double SampleBeta(double alpha, double beta)
 {
@@ -152,13 +151,6 @@ public:
         RandomNumberGenerator::Instance()->Reseed(replicate_index);
         
         // Generate CIRCULAR honeycomb mesh
-        // GetCircularMesh() ALREADY trims the mesh down to the circular
-        // region of the given radius -- p_mesh only contains nodes inside
-        // the circle. Do NOT re-filter by radius afterwards: doing so can
-        // produce a location_indices list that is a strict subset of the
-        // mesh's actual nodes (e.g. due to floating-point boundary effects),
-        // which MeshBasedCellPopulation's constructor rejects outright
-        // ("Node N does not appear to have a cell associated with it").
         HoneycombMeshGenerator generator(mesh_size, mesh_size, 0);
         boost::shared_ptr<MutableMesh<2,2>> p_mesh_shared = generator.GetCircularMesh(spheroid_radius);
         MutableMesh<2,2>* p_mesh = p_mesh_shared.get();
@@ -216,9 +208,6 @@ public:
             //
             // Each cell is an independent agent with its own EGFR allelic
             // composition, sampled from a Beta(alpha, beta) distribution.
-            // Biological basis: PC9 tumors harbour pre-existing EGFR-low
-            // subclones (Alsaed et al. 2025); within-subline variability
-            // is epigenetic/stochastic (Camp et al. 2021).
             // ----------------------------------------------------------
             double cell_mut_frac = SampleBeta(beta_alpha, beta_beta);
             double cell_wt_frac  = 1.0 - cell_mut_frac;
@@ -349,18 +338,6 @@ public:
         simulator.AddSimulationModifier(p_oxygen_modifier);
         
         // Add HIF-1a and TGF-a signaling
-        // Args 1-8 match the originally documented signature (hypoxia threshold,
-        // max HIF-1a, HIF-1a degradation rate, TGF-a production rate, TGF-a
-        // diffusion radius, TGF-a degradation rate, max TGF-a, dt).
-        // Args 9-11 (0.05, 0.08, 0.003) were confirmed in a prior chat as HIF
-        // basal synthesis rate, max O2-dependent HIF degradation, and
-        // O2-independent HIF degradation rate respectively.
-        // Args 12-13 (the trailing 0.0, 0.0) appear in your pasted reference
-        // script but I could not verify their meaning against any header
-        // file or prior chat — copied verbatim from your reference rather
-        // than guessed. Please confirm what these represent (e.g. against
-        // HypoxiaSignalingModifier.hpp's constructor declaration) before
-        // relying on this run.
         MAKE_PTR_ARGS(HypoxiaSignalingModifier, p_hypoxia_signaling, 
             (0.05,                  // Hypoxia threshold
                 1.0,                // Max HIF-1a concentration
@@ -386,14 +363,6 @@ public:
         // Add EGFR-TGF-a signaling (reads HIF-1a and TGF-a from above, and
         // each cell's own "egfr_mut_fraction" / "egfr_wt_fraction" /
         // "egfr_rescue" from CellData)
-        // Args 1-3 (0.001, 1.0, 1.0) match the originally documented
-        // signature: TGF-a activation threshold, WT EGFR sensitivity,
-        // mutant EGFR basal activity.
-        // Args 4-8 (0.3, 2, 0.25, dt, 0.0) appear in your pasted reference
-        // script but I could not verify their meaning against any header
-        // file or prior chat — copied verbatim from your reference rather
-        // than guessed. Please confirm against EGFRSignalingModifier.hpp's
-        // constructor declaration before relying on this run.
         MAKE_PTR_ARGS(EGFRSignalingModifier, p_egfr_signaling, 
             (0.001,                   // TGF-a activation threshold
                 1.0,                // WT EGFR sensitivity
