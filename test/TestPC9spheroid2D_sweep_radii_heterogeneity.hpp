@@ -1,62 +1,8 @@
 /*
- * TestPC9Spheroid2D.hpp
- *
- * 2D cross-section model of PC9 or general NSCLC tumor spheroid with hypoxic zones
- * Parameter sweep on initial spheroid radius (4 different values)
- * Models radial oxygen gradient from spheroid surface to hypoxic/necrotic core
- * Incorporates HIF-1a and TGF-a signaling under hypoxia, affecting proliferation
- * Based on off-lattice cell-based modeling framework in Chaste
- *
+ * TestPC9spheroid2D_sweep_radii_heterogeneity.hpp
  * Created on: 24 Oct, 2025
  * Author: Vaishnudebi Dutta
  * FIXED: 16 Feb, 2026
- * HETEROGENEITY ADDED: 29 Jun, 2026 (aligned to TestPC9Spheroid2D_Heterogeneous_Resumable.hpp)
- *
- * ============================================================================
- * HETEROGENEITY EXTENSION
- * ============================================================================
- * This version introduces PER-CELL intratumoral heterogeneity in the EGFR
- * mut:wt ratio, replacing the previous global scalar (egfr_mut_fraction).
- * The CellData key names and SampleBeta helper here mirror those used in
- * the general (non-sweep) heterogeneous simulation script you provided
- * (TestPC9Spheroid2D_Heterogeneous_Resumable.hpp), so results are directly
- * comparable across both.
- *
- * NOTE ON MODIFIER ARGUMENTS: your reference script calls
- * HypoxiaSignalingModifier with 13 arguments and EGFRSignalingModifier with
- * 8 arguments. I could only verify the meaning of the first ~8 args of each
- * (and 3 more HIF-related args) against prior chats/header discussions; the
- * remaining trailing arguments (two 0.0's on Hypoxia, and 0.3/2/0.25/0.0 on
- * EGFR) are carried over verbatim from your pasted reference but their
- * physical meaning is UNVERIFIED here — see inline comments at each call
- * site below. Please check these against the actual .hpp constructor
- * declarations before trusting sweep output quantitatively.
- *
- * Biological motivation:
- *   Alsaed et al. (Nat Commun, 2025; doi:10.1038/s41467-024-55378-5) show
- *   that EGFR-mutant tumors harbour pre-existing subclones with low EGFR
- *   expression, and that EGFR-low cells are more tolerant to TKI. PC9 cells
- *   display significant variability in EGFR inhibitor response even among
- *   clonal sublines (Camp et al., PLOS Biology, 2021;
- *   doi:10.1371/journal.pbio.3000797). Kobayashi & Tan (IJMS, 2023) review
- *   how this subclonal heterogeneity drives drug-tolerant persister (DTP)
- *   populations and eventual resistance.
- *
- * Implementation:
- *   Each cell is assigned its own egfr_mut_fraction at initialisation,
- *   sampled from a Beta(alpha, beta) distribution via Chaste's own
- *   StandardNormalRandomDeviate(), clamped to [0.01, 0.99]. Mutation type
- *   (EXON19_DEL vs L858R) sets the base EGFR rescue fraction; per-cell
- *   G1 duration and EGFR rescue fraction are then derived from each cell's
- *   own sampled fraction rather than a global constant:
- *     - cell_g1     = g1_min + g1_extra_hours * cell_wt_frac
- *                     (WT-enriched cells cycle slower)
- *     - cell_rescue = base_rescue_fraction * cell_mut_frac
- *                     (rescue is mediated by mutant EGFR signalling)
- *
- *   Per-cell fractions are stored in CellData ("egfr_mut_fraction",
- *   "egfr_wt_fraction", "egfr_rescue") for HypoxiaSignalingModifier and
- *   EGFRSignalingModifier to read at runtime.
  *
  * Sweep structure (unchanged from the original radius sweep):
  *   4 initial spheroid radii x 5 replicates each, with index-based resume
