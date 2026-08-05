@@ -2,19 +2,17 @@
 * Created on: 21 Oct 2025
 * Last modified: 16 Jan 2026
 * Author: Vaishnudebi Dutta
-* Cleaned version: Removed EGFR ratio shift complexity, keeping constant 90:10 ratio
 */
 
 #include "CellData.hpp"
 #include "ApcTwoHitCellMutationState.hpp"
 
 // ============================================================================
-// Simulates HIF-1a stabilisation in hypoxic regions and TGF-a secretion
 class HypoxiaSignalingModifier : public AbstractCellBasedSimulationModifier<2>
 {
 private:
     double mHypoxiaThreshold;           // O2 threshold for HIF-1a activation (~0.08)
-    double mMaxHIF1AlphaProduction;     // Max HIF-1a concentration
+    double mMaxHIF1AlphaProduction;     // Max HIF concentration
     double mHIF1AlphaDegradationRate;   // Degradation rate in normoxic conditions
     double mTGFAlphaProductionRate;     // How much TGF-a per unit of HIF-1a
     double mTGFAlphaDiffusionRadius;    // How far TGF-a diffuses to neighbors (~2-3 cell units)
@@ -61,7 +59,7 @@ public:
     
     virtual void UpdateAtEndOfTimeStep(AbstractCellPopulation<2,2>& rCellPopulation)
     {
-        // Step 1: Update HIF-1a based on oxygen levels
+        // Step 1: Update HIF based on oxygen levels
         for (AbstractCellPopulation<2>::Iterator cell_iter = rCellPopulation.Begin();
              cell_iter != rCellPopulation.End();
              ++cell_iter)
@@ -78,13 +76,13 @@ public:
 
             if (oxygen >= mHypoxiaThreshold)
             {
-                // Normoxic: HIF-1a degrades (VHL-mediated degradation)
+                // Normoxic: HIF degrades (VHL-mediated degradation)
                 new_hif1alpha = current_hif1alpha * (1.0 - mHIF1AlphaDegradationRate);
             }
             else if (oxygen > 0.01 && oxygen < mHypoxiaThreshold)
             {
                 // Hypoxic range (0.01-0.05): HIF-1a accumulation
-                // d[HIF-1a]/dt = k_0 - (k_deg_O2 * [O2]/(K_m + [O2]) + k_deg_const) * [HIF-1a]
+                // d[HIF]/dt = k_0 - (k_deg_O2 * [O2]/(K_m + [O2]) + k_deg_const) * [HIF-1a]
                 
                 //double k_0 = mhifBasalSynthesisRate;                      // Basal synthesis rate
                 double k_deg_O2_max = mk_deg_O2_max;             // Max oxygen-dependent degradation
@@ -114,7 +112,7 @@ public:
             cell_iter->GetCellData()->SetItem("hif1alpha", new_hif1alpha);
         }
         
-        // Step 2: TGF-a production driven by HIF-1a
+        // Step 2: TGF-a production driven by HIF
         for (AbstractCellPopulation<2>::Iterator cell_iter = rCellPopulation.Begin();
              cell_iter != rCellPopulation.End();
              ++cell_iter)
@@ -136,7 +134,7 @@ public:
                 current_tgfalpha = cell_iter->GetCellData()->GetItem("tgfalpha");
             }
             
-            // TGF-a production is proportional to HIF-1a levels
+            // TGF-a production is proportional to HIF levels
             double tgfalpha_production = hif1alpha * mTGFAlphaProductionRate;
             double new_tgfalpha = current_tgfalpha + tgfalpha_production -
                                 (current_tgfalpha * mTGFAlphaDegradationRate);
@@ -156,7 +154,7 @@ public:
         auto p_mesh_pop = dynamic_cast<MeshBasedCellPopulation<2>*>(&rCellPopulation);
         MutableMesh<2,2>& mesh = p_mesh_pop->rGetMesh();
 
-        // Build node_index → CellPtr map (O(N), done once per call)
+        // Build node_index 
         std::map<unsigned, CellPtr> node_to_cell;
         for (AbstractCellPopulation<2>::Iterator cell_iter = rCellPopulation.Begin();
             cell_iter != rCellPopulation.End();
@@ -166,7 +164,7 @@ public:
             node_to_cell[node_idx] = *cell_iter;
         }
 
-        // Accumulate transfers into a separate map (node_index → transfer amount)
+        // Accumulate transfers into a separate map
         // Separating accumulation from application prevents a cell that receives
         // transfer in one pass from incorrectly re-propagating it in the same step.
         std::map<unsigned, double> tgfalpha_transfer;
@@ -200,7 +198,7 @@ public:
                 }
             }
 
-            // O(k) lookup — directly look up each neighbour in the map
+            //Directly look up each neighbour in the map
             for (unsigned nb_node : neighbour_nodes)
             {
                 auto it = node_to_cell.find(nb_node);
@@ -220,7 +218,7 @@ public:
             }
         }
 
-        // Apply accumulated transfers (one O(N) pass at most)
+        // Apply accumulated transfers
         for (auto& kv : tgfalpha_transfer)
         {
             auto it = node_to_cell.find(kv.first);
@@ -237,7 +235,7 @@ public:
     virtual void SetupSolve(AbstractCellPopulation<2,2>& rCellPopulation, 
                            std::string outputDirectory)
     {
-        // Initialize HIF-1a, TGF-a, and EGFR fractions in all cells
+        // Initialise HIF, TGF-a, and EGFR fractions in all cells
         for (AbstractCellPopulation<2>::Iterator cell_iter = rCellPopulation.Begin();
              cell_iter != rCellPopulation.End();
              ++cell_iter)
@@ -250,15 +248,6 @@ public:
             {
                 cell_iter->GetCellData()->SetItem("tgfalpha", 0.0);
             }
-            // Initialize EGFR fractions to constant 90:10 ratio
-            //if (!cell_iter->GetCellData()->HasItem("egfr_mut_fraction"))
-            //{
-                //cell_iter->GetCellData()->SetItem("egfr_mut_fraction", MUTANT_EGFR_FRACTION);
-            //}
-            //if (!cell_iter->GetCellData()->HasItem("egfr_wt_fraction"))
-            //{
-                //cell_iter->GetCellData()->SetItem("egfr_wt_fraction", WT_EGFR_FRACTION);
-            //}
         }
     }
     
